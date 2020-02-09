@@ -1,20 +1,46 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require("express");
+const http = require("http");
+const bodyParser = require("body-parser");
+const logger = require("morgan");
+const mongoose = require("mongoose");
+const config = require("./config/main");
+const routes = require("./routes");
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
+const startExpressApp = () => {
+  app.use(logger("dev"));
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
+  app.use(function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, HEAD");
+    next();
+  });
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  routes(app);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+  startServer();
+};
 
-module.exports = app;
+const startServer = () => {
+  const server = http.createServer(app);
+  server.listen(process.env.PORT || config.port, function() {
+    console.log(
+      `==== Server started on port ${process.env.PORT || config.port} =====`
+    );
+  });
+};
+
+mongoose
+  .connect(config.mongoUri, config.options)
+  .then(() => {
+    console.log("Database successfully connected");
+    startExpressApp();
+  })
+  .catch(err => console.log(err));
