@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const recipesSchema = require("../models/recipes-model");
+const {
+  recipesSchema,
+  previousRecipesSchema
+} = require("../models/recipes-model.js");
 
 /* GET users listing. */
 module.exports = function() {
@@ -18,6 +21,28 @@ module.exports = function() {
     recipesSchema
       .create(recipes)
       .then(recipes => res.status(201).json(recipes))
+      .catch(err => res.status(400).json(err));
+  });
+  router.put("/recipes/:id", function(req, res, next) {
+    const { id } = req.params;
+    const { description, ingredients, howToCook } = req.body;
+    recipesSchema
+      .findByIdAndUpdate(id, {
+        description,
+        howToCook,
+        ingredients
+      })
+      .exec()
+      .then(recipes => {
+        return previousRecipesSchema.create({
+          description: recipes.description,
+          title: recipes.title,
+          ingredients: recipes.ingredients,
+          howToCook: recipes.howToCook,
+          parentId: id
+        });
+      })
+      .then(() => res.sendStatus(200))
       .catch(err => res.status(400).json(err));
   });
   return router;

@@ -27,7 +27,7 @@ const recipesSchema = new Schema(
   { timestamps: true }
 );
 
-const previousVersionRecipes = new Schema({
+const previousRecipesSchema = new Schema({
   ...recipes,
   parentId: {
     type: Schema.Types.ObjectId,
@@ -36,4 +36,10 @@ const previousVersionRecipes = new Schema({
   }
 });
 
-module.exports = mongoose.model("recipes", recipesSchema);
+module.exports = {
+  recipesSchema: mongoose.model("recipes", recipesSchema),
+  previousRecipesSchema: mongoose.model(
+    "previousRecipes",
+    previousRecipesSchema
+  )
+};
