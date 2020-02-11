@@ -3,8 +3,13 @@ const http = require("http");
 const bodyParser = require("body-parser");
 const logger = require("morgan");
 const mongoose = require("mongoose");
-const config = require("./config/main");
 const routes = require("./routes");
+let config;
+if (process.env.NODE_ENV === "production") {
+  config = require("./config/pruduction.js");
+} else {
+  config = require("./config/main");
+}
 
 const app = express();
 
